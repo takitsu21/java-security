@@ -15,25 +15,40 @@ public class Entity {
     // keypair
     public PublicKey thePublicKey;
     private PrivateKey thePrivateKey;
+    public PublicKey alicePublicKey;
+    private KeyPair DhKeyPair;
+    private KeyAgreement KeyAgree;
+
+    public KeyPair getDhKeyPair() {
+        return DhKeyPair;
+    }
+    public PublicKey getDhPubKey(){
+        return DhKeyPair.getPublic();
+    }
+
+    public void setDhKeyPair(KeyPair dhKeyPair) {
+        DhKeyPair = dhKeyPair;
+    }
 
     /**
      * Entity Constructor
      * Public / Private Key generation
      **/
-    public Entity() {
+    public Entity(KeyPairGenerator keyGen) {
         // INITIALIZATION
 
         // generate a public/private key
         try {
-            KeyPairGenerator KeyGen = java.security.KeyPairGenerator.getInstance("RSA");
-            KeyGen.initialize(1024);
+//            KeyPairGenerator KeyGen = KeyPairGenerator.getInstance("RSA", "BC");
+//            KeyGen.initialize(1024);
             // get an instance of KeyPairGenerator  for RSA
             // Initialize the key pair generator for 1024 length
             // Generate the key pair
-            KeyPair pair = KeyGen.generateKeyPair();
+//            KeyPair pair = KeyGen.generateKeyPair();
+            this.DhKeyPair = keyGen.generateKeyPair();
             // save the public/private key
-            this.thePublicKey = pair.getPublic();
-            this.thePrivateKey = pair.getPrivate();
+            this.thePublicKey = this.DhKeyPair.getPublic();
+            this.thePrivateKey = this.DhKeyPair.getPrivate();
 
         } catch (Exception e) {
             System.out.println("Signature error");
@@ -205,5 +220,49 @@ public class Entity {
     }
 
 
+    public void receiveAlicePublicKey(PublicKey aPK)  {
+        try {
+            Provider prov = new BouncyCastleProvider();
+            Security.addProvider(prov);
+            KeyAgreement keyAgreement = KeyAgreement.getInstance("RSADH", prov);
+            keyAgreement.init(this.thePrivateKey);
+            keyAgreement.doPhase(aPK, true);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public KeyAgreement getKeyAgree() {
+        return KeyAgree;
+    }
+
+    public void setKeyAgree(KeyAgreement keyAgree) throws java.security.KeyException  {
+        KeyAgree = keyAgree;
+        assert (DhKeyPair != null);
+        this.KeyAgree.init(DhKeyPair.getPrivate());
+    }
+
+    public PublicKey getThePublicKey() {
+        return thePublicKey;
+    }
+
+    public void setThePublicKey(PublicKey thePublicKey) {
+        this.thePublicKey = thePublicKey;
+    }
+
+    public PrivateKey getThePrivateKey() {
+        return thePrivateKey;
+    }
+
+    public void setThePrivateKey(PrivateKey thePrivateKey) {
+        this.thePrivateKey = thePrivateKey;
+    }
+
+    public PublicKey getAlicePublicKey() {
+        return alicePublicKey;
+    }
+
+    public void setAlicePublicKey(PublicKey alicePublicKey) {
+        this.alicePublicKey = alicePublicKey;
+    }
 }

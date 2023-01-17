@@ -6,6 +6,12 @@ package com.polytech;
  * asymetric clearTextFile SignatureFile CipheredFile DecipheredFile
  **/
 
+import com.polytech.security.TripleDES;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+import javax.crypto.KeyAgreement;
+import javax.crypto.spec.DHParameterSpec;
+import java.math.BigInteger;
 import java.security.*;
 import java.io.*;
 
@@ -20,8 +26,8 @@ public class Asymetric {
         Security.addProvider(prov);
 
         // create two new entity
-        Entity Alice = new Entity();
-        Entity Bob = new Entity();
+        Entity Alice = new Entity(null);
+        Entity Bob = new Entity(null);
 
         try {
 
@@ -82,7 +88,8 @@ public class Asymetric {
             out.close();
 
 //			 PROTOCOL IMPLEMENTATION
-            KeyExchangeProtocol();
+            agreement();
+//            KeyExchangeProtocol();
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("java Asymetric clearTextFile SignatureFile CipheredFile DecipheredFile");
@@ -91,16 +98,93 @@ public class Asymetric {
 
     }
 
-    private static void KeyExchangeProtocol() {
-        Entity Alice, Bob;
+    private static void diffieHellman(Entity alice, Entity bob) throws Exception {
+        BigInteger g512 = new BigInteger("1234567890", 16);
+        BigInteger p512 = new BigInteger("1234567890", 16);
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+        DHParameterSpec dhParams = new DHParameterSpec(p512, g512);
+        KeyPairGenerator KeyGen = KeyPairGenerator.getInstance("DH", "BC");
+        KeyGen.initialize(dhParams, new SecureRandom());
+        alice.setDhKeyPair(KeyGen.generateKeyPair());
+        alice.setKeyAgree(KeyAgreement.getInstance("DH", "BC"));
 
-        //	Alice sends her public key to Bob.
-        //	Bob generate a DES session key.
-        //	Bob encrypts it with Alice’s public key.
-        //	Alice decrypts the DES key with her private key.
-        //  Alice sends a message to Bob with her session key
-        //	Bob decrypts the message with the session key.
+        bob.setDhKeyPair(KeyGen.generateKeyPair());
+        bob.setKeyAgree(KeyAgreement.getInstance("DH", "BC"));
+
+        alice.getKeyAgree().doPhase(bob.getDhPubKey(), true);
+        bob.getKeyAgree().doPhase(alice.getDhPubKey(), true);
+
+
+
+
+
+
+
+
 
     }
+
+    public static void agreement() {
+
+        try {
+            BigInteger g512 = new BigInteger("1234567890", 16);
+            BigInteger p512 = new BigInteger("1234567890", 16);
+            DHParameterSpec dhParams = new DHParameterSpec(p512, g512);
+            Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "BC");
+            keyGen.initialize(dhParams, new SecureRandom());
+
+            Entity Alice, Bob;
+            Alice = new Entity(keyGen);
+            Bob = new Entity(keyGen);
+
+
+
+
+
+
+            Alice.setKeyAgree(KeyAgreement.getInstance("DH", "BC"));
+            Bob.setKeyAgree(KeyAgreement.getInstance("DH", "BC"));
+
+            Alice.getKeyAgree().init(Alice.getThePrivateKey());
+            Bob.getKeyAgree().init(Bob.getThePrivateKey());
+
+            Alice.getKeyAgree().doPhase(Bob.getDhKeyPair().getPublic(), true);
+            Bob.getKeyAgree().doPhase(Alice.getDhKeyPair().getPublic(), true);
+
+            MessageDigest hash = MessageDigest.getInstance("SHA1", "BC");
+            System.out.println(new String(hash.digest(Alice.getKeyAgree().generateSecret())));
+            System.out.println(new String(hash.digest(Bob.getKeyAgree().generateSecret())));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+//    private static void KeyExchangeProtocol() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+//        Entity Alice, Bob;
+//        Alice = new Entity();
+//        Bob = new Entity();
+//        Provider prov = new BouncyCastleProvider();
+//        Security.addProvider(prov);
+//
+//        //	Alice sends her public key to Bob.
+//        Bob.alicePublicKey = Alice.thePublicKey;
+//        //	Bob generate a DES session key.
+//        TripleDES sessionKey = new TripleDES();
+//
+//        //	Bob encrypts it with Alice’s public key.
+////        byte[] cipheredKey = Bob.encrypt(sessionKey.encryptCBC(), Alice.thePublicKey);
+//        //	Alice decrypts the DES key with her private key.
+////        byte[] decipheredKey = Alice.decrypt(cipheredKey);
+//        //  Alice sends a message to Bob with her session key
+//        String message = "Hello Bob";
+//        byte[] cipheredMessage = Alice.encrypt(message.getBytes("UTF-8"), Alice.thePublicKey);
+//        //	Bob decrypts the message with the session key.
+//        byte[] decipheredMessage = Bob.decrypt(cipheredMessage);
+//        System.out.println("Deciphered Message == \n" + new String(decipheredMessage));
+//
+//    }
 
 }
