@@ -1,7 +1,9 @@
 package com.polytech;
 
 
+import org.bouncycastle.asn1.pkcs.DHParameter;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.PSSSignatureSpi;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.security.*;
 import javax.crypto.*;
@@ -10,7 +12,6 @@ import java.io.*;
 import java.util.Arrays;
 
 public class Entity {
-
     // keypair
     public PublicKey thePublicKey;
     private PrivateKey thePrivateKey;
@@ -202,6 +203,7 @@ public class Entity {
         }
 
     }
+
 
 
 }
