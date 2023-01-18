@@ -217,43 +217,6 @@ public class Entity {
 
     }
 
-
-    public void receiveAlicePublicKey(PublicKey aPK) {
-        try {
-            Provider prov = new BouncyCastleProvider();
-            Security.addProvider(prov);
-            KeyAgreement keyAgreement = KeyAgreement.getInstance("RSADH", prov);
-            keyAgreement.init(this.thePrivateKey);
-            keyAgreement.doPhase(aPK, true);
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public PublicKey getThePublicKey() {
-        return thePublicKey;
-    }
-
-    public void setThePublicKey(PublicKey thePublicKey) {
-        this.thePublicKey = thePublicKey;
-    }
-
-    public PrivateKey getThePrivateKey() {
-        return thePrivateKey;
-    }
-
-    public void setThePrivateKey(PrivateKey thePrivateKey) {
-        this.thePrivateKey = thePrivateKey;
-    }
-
-    public PublicKey getAlicePublicKey() {
-        return alicePublicKey;
-    }
-
-    public void setAlicePublicKey(PublicKey alicePublicKey) {
-        this.alicePublicKey = alicePublicKey;
-    }
-
     private void initKeygen() throws NoSuchAlgorithmException {
         this.keygeneratorDES = KeyGenerator.getInstance("TripleDES");
     }
@@ -266,26 +229,11 @@ public class Entity {
 
     }
 
-    public KeyGenerator getKeygeneratorDES() {
-        return keygeneratorDES;
-    }
-
-    public void setKeygeneratorDES(KeyGenerator keygeneratorDES) {
-        this.keygeneratorDES = keygeneratorDES;
-    }
-
-    public SecretKey getKeyDES() {
-        return keyDES;
-    }
     public void regenIV(){
         byte[] iv = new byte[8];
         SecureRandom random = new SecureRandom();
         random.nextBytes(iv);
         this.ivDES = new IvParameterSpec(iv);
-    }
-
-    public void setKeyDES(SecretKey keyDES) {
-        this.keyDES = keyDES;
     }
 
     public byte[] encryptSessionKey(SecretKey sessionKey, PublicKey thePublicKey) {

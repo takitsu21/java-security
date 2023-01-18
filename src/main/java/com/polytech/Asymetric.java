@@ -89,83 +89,15 @@ public class Asymetric {
             out = new FileOutputStream(new File(argv[3]));
             out.write(aDeciphered);
             out.close();
-
 //			 PROTOCOL IMPLEMENTATION
-//            agreement();
             KeyExchangeProtocol();
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("java Asymetric clearTextFile SignatureFile CipheredFile DecipheredFile");
         }
-
-
     }
-//
-//    private static void diffieHellman(Entity alice, Entity bob) throws Exception {
-//        BigInteger g512 = new BigInteger("1234567890", 16);
-//        BigInteger p512 = new BigInteger("1234567890", 16);
-//        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-//        DHParameterSpec dhParams = new DHParameterSpec(p512, g512);
-//        KeyPairGenerator KeyGen = KeyPairGenerator.getInstance("DH", "BC");
-//        KeyGen.initialize(dhParams, new SecureRandom());
-//        alice.setDhKeyPair(KeyGen.generateKeyPair());
-//        alice.setKeyAgree(KeyAgreement.getInstance("DH", "BC"));
-//
-//        bob.setDhKeyPair(KeyGen.generateKeyPair());
-//        bob.setKeyAgree(KeyAgreement.getInstance("DH", "BC"));
-//
-//        alice.getKeyAgree().doPhase(bob.getDhPubKey(), true);
-//        bob.getKeyAgree().doPhase(alice.getDhPubKey(), true);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//    }
-//
-//    public static void agreement() {
-//
-//        try {
-//            BigInteger g512 = new BigInteger("1234567890", 16);
-//            BigInteger p512 = new BigInteger("1234567890", 16);
-//            DHParameterSpec dhParams = new DHParameterSpec(p512, g512);
-//            Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-//
-//            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "BC");
-//            keyGen.initialize(dhParams, new SecureRandom());
-//
-//            Entity Alice, Bob;
-//            Alice = new Entity(keyGen);
-//            Bob = new Entity(keyGen);
-//
-//
-//
-//
-//
-//
-//            Alice.setKeyAgree(KeyAgreement.getInstance("DH", "BC"));
-//            Bob.setKeyAgree(KeyAgreement.getInstance("DH", "BC"));
-//
-//            Alice.getKeyAgree().init(Alice.getThePrivateKey());
-//            Bob.getKeyAgree().init(Bob.getThePrivateKey());
-//
-//            Alice.getKeyAgree().doPhase(Bob.getDhKeyPair().getPublic(), true);
-//            Bob.getKeyAgree().doPhase(Alice.getDhKeyPair().getPublic(), true);
-//
-//            MessageDigest hash = MessageDigest.getInstance("SHA1", "BC");
-//            System.out.println(new String(hash.digest(Alice.getKeyAgree().generateSecret())));
-//            System.out.println(new String(hash.digest(Bob.getKeyAgree().generateSecret())));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 
-
-    private static void KeyExchangeProtocol() throws UnsupportedEncodingException, NoSuchAlgorithmException {
+    private static void KeyExchangeProtocol() {
         Entity Alice, Bob;
         Alice = new Entity();
         Bob = new Entity();
@@ -186,6 +118,7 @@ public class Asymetric {
         //  Alice sends a message to Bob with her session key
         String message = "Hello Bob";
         byte[] encryptedMessage = Alice.encryptDES(message.getBytes());
+        System.out.println("Encrypted message: " + new String(encryptedMessage));
         // Bob decrypts the message with his session key
         byte[] decipheredMessage = Bob.decryptDES(encryptedMessage);
         System.out.println("Deciphered Message == \n" + new String(decipheredMessage));
