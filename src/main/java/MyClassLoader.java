@@ -1,5 +1,5 @@
 import java.io.*;
-import java.util.Hashtable;
+import java.util.Arrays;
 
 public class MyClassLoader extends ClassLoader {
 
@@ -24,6 +24,7 @@ public class MyClassLoader extends ClassLoader {
         // Check with the primordial class loader
         try {
             result = super.findSystemClass(name);
+
             // Return a system class
             return result;
         } catch (ClassNotFoundException e) {
@@ -37,6 +38,7 @@ public class MyClassLoader extends ClassLoader {
 
         // Try to load it from subdirectory "Motorbikes".
         byte typeData[] = getTypeFromDir(name);
+        System.out.println(Arrays.toString(typeData));
         if (typeData == null) {
             throw new ClassNotFoundException();
         }
@@ -59,7 +61,7 @@ public class MyClassLoader extends ClassLoader {
     private byte[] getTypeFromDir(String typeName) {
 
         FileInputStream fis;
-        String fileName = "Motorbikes" + File.separatorChar +
+        String fileName = "src/Motorbikes" + File.separatorChar +
                 typeName.replace('.', File.separatorChar)
                 + ".class";
 
@@ -81,6 +83,7 @@ public class MyClassLoader extends ClassLoader {
                 c = bis.read();
             }
         } catch (IOException e) {
+            e.printStackTrace();
             return null;
         }
         return out.toByteArray();
