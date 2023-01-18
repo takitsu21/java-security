@@ -1,14 +1,14 @@
 package com.polytech;
 
 
-import org.bouncycastle.asn1.pkcs.DHParameter;
-import org.bouncycastle.jcajce.provider.asymmetric.rsa.PSSSignatureSpi;
+import org.bouncycastle.jcajce.provider.symmetric.CAST5;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.security.*;
 import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
-import java.io.*;
 import java.util.Arrays;
 
 public class Entity {
@@ -16,39 +16,33 @@ public class Entity {
     public PublicKey thePublicKey;
     private PrivateKey thePrivateKey;
     public PublicKey alicePublicKey;
-    private KeyPair DhKeyPair;
-    private KeyAgreement KeyAgree;
 
-    public KeyPair getDhKeyPair() {
-        return DhKeyPair;
-    }
-    public PublicKey getDhPubKey(){
-        return DhKeyPair.getPublic();
-    }
+    private KeyGenerator keygeneratorDES;
 
-    public void setDhKeyPair(KeyPair dhKeyPair) {
-        DhKeyPair = dhKeyPair;
-    }
+    private SecretKey keyDES;
+    public IvParameterSpec ivDES;
 
     /**
      * Entity Constructor
      * Public / Private Key generation
      **/
-    public Entity(KeyPairGenerator keyGen) {
+    public Entity() {
         // INITIALIZATION
 
         // generate a public/private key
         try {
-//            KeyPairGenerator KeyGen = KeyPairGenerator.getInstance("RSA", "BC");
-//            KeyGen.initialize(1024);
+            KeyPairGenerator KeyGen = KeyPairGenerator.getInstance("RSA", "BC");
+            KeyGen.initialize(1024);
             // get an instance of KeyPairGenerator  for RSA
             // Initialize the key pair generator for 1024 length
             // Generate the key pair
-//            KeyPair pair = KeyGen.generateKeyPair();
-            this.DhKeyPair = keyGen.generateKeyPair();
+            KeyPair pair = KeyGen.generateKeyPair();
+//            this.DhKeyPair = keyGen.generateKeyPair();
             // save the public/private key
-            this.thePublicKey = this.DhKeyPair.getPublic();
-            this.thePrivateKey = this.DhKeyPair.getPrivate();
+            this.thePublicKey = pair.getPublic();
+            this.thePrivateKey = pair.getPrivate();
+            initKeygen();
+
 
         } catch (Exception e) {
             System.out.println("Signature error");
@@ -129,6 +123,10 @@ public class Entity {
             // process the digest
             MessageDigest md = MessageDigest.getInstance("SHA1");
             byte[] digest = md.digest(aMessage);
+            byte[] iv = new byte[8];
+            SecureRandom random = new SecureRandom();
+            random.nextBytes(iv);
+            this.ivDES = new IvParameterSpec(iv);
 
 
             // return the encrypted digest
@@ -220,7 +218,7 @@ public class Entity {
     }
 
 
-    public void receiveAlicePublicKey(PublicKey aPK)  {
+    public void receiveAlicePublicKey(PublicKey aPK) {
         try {
             Provider prov = new BouncyCastleProvider();
             Security.addProvider(prov);
@@ -230,16 +228,6 @@ public class Entity {
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             e.printStackTrace();
         }
-    }
-
-    public KeyAgreement getKeyAgree() {
-        return KeyAgree;
-    }
-
-    public void setKeyAgree(KeyAgreement keyAgree) throws java.security.KeyException  {
-        KeyAgree = keyAgree;
-        assert (DhKeyPair != null);
-        this.KeyAgree.init(DhKeyPair.getPrivate());
     }
 
     public PublicKey getThePublicKey() {
@@ -265,4 +253,132 @@ public class Entity {
     public void setAlicePublicKey(PublicKey alicePublicKey) {
         this.alicePublicKey = alicePublicKey;
     }
+
+    private void initKeygen() throws NoSuchAlgorithmException {
+        this.keygeneratorDES = KeyGenerator.getInstance("TripleDES");
+    }
+
+
+
+    public SecretKey generateSessionKey() {
+        this.keyDES = this.keygeneratorDES.generateKey();
+        return this.keyDES;
+
+    }
+
+    public KeyGenerator getKeygeneratorDES() {
+        return keygeneratorDES;
+    }
+
+    public void setKeygeneratorDES(KeyGenerator keygeneratorDES) {
+        this.keygeneratorDES = keygeneratorDES;
+    }
+
+    public SecretKey getKeyDES() {
+        return keyDES;
+    }
+    public void regenIV(){
+        byte[] iv = new byte[8];
+        SecureRandom random = new SecureRandom();
+        random.nextBytes(iv);
+        this.ivDES = new IvParameterSpec(iv);
+    }
+
+    public void setKeyDES(SecretKey keyDES) {
+        this.keyDES = keyDES;
+    }
+
+    public byte[] encryptSessionKey(SecretKey sessionKey, PublicKey thePublicKey) {
+        try {
+            // get an instance of RSA Cipher
+            // init the Cipher in ENCRYPT_MODE and aPK
+            // use doFinal on the byte[] and return the ciphered byte[]
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, thePublicKey);
+            return cipher.doFinal(sessionKey.getEncoded());
+
+        } catch (Exception e) {
+            System.out.println("Encryption error");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public byte[] encryptIV() {
+        try {
+            // get an instance of RSA Cipher
+            // init the Cipher in ENCRYPT_MODE and aPK
+            // use doFinal on the byte[] and return the ciphered byte[]
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, this.alicePublicKey);
+            return cipher.doFinal(this.ivDES.getIV());
+
+        } catch (Exception e) {
+            System.out.println("Encryption error");
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public void decryptIV(byte[] encIV) {
+        try{
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.DECRYPT_MODE, this.thePrivateKey);
+            this.ivDES = new IvParameterSpec(cipher.doFinal(encIV));
+
+        }
+        catch (Exception e) {
+            System.out.println("Decryption error");
+            e.printStackTrace();
+
+        }
+
+    }
+    public void decryptSessionKey(byte[] encryptedSessionKey) {
+        try {
+            // get an instance of RSA Cipher
+            // init the Cipher in DECRYPT_MODE and aPK
+            // use doFinal on the byte[] and return the deciphered byte[]
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.DECRYPT_MODE, this.thePrivateKey);
+            this.keyDES = new SecretKeySpec(cipher.doFinal(encryptedSessionKey), "TripleDES");
+
+        } catch (Exception e) {
+            System.out.println("Encryption error");
+            e.printStackTrace();
+        }
+    }
+
+    public byte[] encryptDES(byte[] aMessage) {
+        try {
+
+            // get an instance of DES Cipher
+            // init the Cipher in ENCRYPT_MODE and aKey
+            // use doFinal on the byte[] and return the ciphered byte[]
+            Cipher cipher = Cipher.getInstance("TripleDES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, this.keyDES,this.ivDES);
+            return cipher.doFinal(aMessage);
+
+        } catch (Exception e) {
+            System.out.println("Encryption error");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public byte[] decryptDES(byte[] aMessage) {
+        try {
+            // get an instance of DES Cipher
+            // init the Cipher in DECRYPT_MODE and aKey
+            // use doFinal on the byte[] and return the deciphered byte[]
+            Cipher cipher = Cipher.getInstance("TripleDES/CBC/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, this.keyDES,this.ivDES);
+            return cipher.doFinal(aMessage);
+
+        } catch (Exception e) {
+            System.out.println("Encryption error");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }
