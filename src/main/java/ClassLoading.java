@@ -60,7 +60,6 @@ public class ClassLoading {
     }
 
     public void haveARide() {
-
         Name_of_Vehicle = "Car";
         load(Name_of_Vehicle);
         Name_of_Vehicle = "Truck";

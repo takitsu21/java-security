@@ -6,6 +6,15 @@ package com.polytech;
  * asymetric clearTextFile SignatureFile CipheredFile DecipheredFile
  **/
 
+import com.polytech.security.TripleDES;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+import javax.crypto.KeyAgreement;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.DHParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
+import java.math.BigInteger;
 import java.security.*;
 import java.io.*;
 
@@ -80,26 +89,39 @@ public class Asymetric {
             out = new FileOutputStream(new File(argv[3]));
             out.write(aDeciphered);
             out.close();
-
 //			 PROTOCOL IMPLEMENTATION
             KeyExchangeProtocol();
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("java Asymetric clearTextFile SignatureFile CipheredFile DecipheredFile");
         }
-
-
     }
 
     private static void KeyExchangeProtocol() {
         Entity Alice, Bob;
+        Alice = new Entity();
+        Bob = new Entity();
+        Provider prov = new BouncyCastleProvider();
+        Security.addProvider(prov);
 
         //	Alice sends her public key to Bob.
+        Bob.alicePublicKey = Alice.thePublicKey;
         //	Bob generate a DES session key.
-        //	Bob encrypts it with Alice’s public key.
+        SecretKey sessionKey = Bob.generateSessionKey();
+        Bob.regenIV();
+        byte[] encIV = Bob.encryptIV();
+        Alice.decryptIV(encIV);
+        //	Bob encrypts the session key with Alice's public key.
+        byte[] encryptedSessionKey = Bob.encryptSessionKey(sessionKey, Alice.thePublicKey);
         //	Alice decrypts the DES key with her private key.
+        Alice.decryptSessionKey(encryptedSessionKey);
         //  Alice sends a message to Bob with her session key
-        //	Bob decrypts the message with the session key.
+        String message = "Hello Bob";
+        byte[] encryptedMessage = Alice.encryptDES(message.getBytes());
+        System.out.println("Encrypted message: " + new String(encryptedMessage));
+        // Bob decrypts the message with his session key
+        byte[] decipheredMessage = Bob.decryptDES(encryptedMessage);
+        System.out.println("Deciphered Message == \n" + new String(decipheredMessage));
 
     }
 
