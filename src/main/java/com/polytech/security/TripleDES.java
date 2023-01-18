@@ -78,7 +78,7 @@ public class TripleDES{
 	/**
 	 * 3DES ECB Encryption
 	 */
-	private Vector<SecretKey> encryptECB(FileInputStream in,
+	public Vector<SecretKey> encryptECB(FileInputStream in,
 							FileOutputStream out, 
 							String KeyGeneratorInstanceName,
 							String CipherInstanceName){
@@ -148,7 +148,7 @@ public class TripleDES{
 	/**
 	 * 3DES ECB Decryption 
 	 */
-	private void decryptECB(Vector<SecretKey> Parameters,
+	public void decryptECB(Vector<SecretKey> Parameters,
 						FileInputStream in, 
 						FileOutputStream out, 
 						String CipherInstanceName){
@@ -201,7 +201,7 @@ public class TripleDES{
 	/**
 	 * 3DES CBC Encryption
 	 */
-	private Vector<SecretKey> encryptCBC(FileInputStream in,
+	public Vector<SecretKey> encryptCBC(FileInputStream in,
 							FileOutputStream out, 
 							String KeyGeneratorInstanceName, 
 							String CipherInstanceName){
@@ -275,7 +275,7 @@ public class TripleDES{
 	/**
 	 * 3DES CBC Decryption 
 	 */
-	private void decryptCBC(Vector Parameters,
+	public void decryptCBC(Vector Parameters,
 						FileInputStream in, 
 						FileOutputStream out, 
 						String CipherInstanceName){
