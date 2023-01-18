@@ -40,10 +40,8 @@ public class ClassLoading {
         try {
 
             URL codebase = new URL("http://localhost:8080/");
-//            URLClassLoader cl = new URLClassLoader(new URL[] {codebase});
-            System.out.println(name);
             Class c = RMIClassLoader.loadClass(codebase, name);
-            webserver.Vehicle v = (webserver.Vehicle) c.newInstance();
+            Vehicle v = (Vehicle) c.newInstance();
             v.ride();
         } catch (Exception e) {
             e.printStackTrace();
@@ -63,13 +61,11 @@ public class ClassLoading {
 
     public void haveARide() {
 
-//        Name_of_Vehicle = "Car";
-//        load(Name_of_Vehicle);
-//        Name_of_Vehicle = "Truck";
-//        rmiLoad(Name_of_Vehicle);
-
+        Name_of_Vehicle = "Car";
+        load(Name_of_Vehicle);
+        Name_of_Vehicle = "Truck";
+        rmiLoad(Name_of_Vehicle);
         System.setSecurityManager(new RMISecurityManager());
-
         Name_of_Vehicle = "Bicycle";
         rmiLoadRemote(Name_of_Vehicle);
         Name_of_Vehicle = "Motorcycle";
