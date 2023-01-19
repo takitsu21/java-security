@@ -1,3 +1,4 @@
+import java.io.File;
 import java.rmi.RMISecurityManager;
 import java.rmi.server.*;
 import java.net.*;
@@ -27,7 +28,7 @@ public class ClassLoading {
 
     private void rmiLoad(String name) {
         try {
-            URL codebase = new URL("file:./" + name);
+            URL codebase = new File("src/main/").toURI().toURL();
             Class c = RMIClassLoader.loadClass(codebase, name);
             Vehicle v = (Vehicle) c.newInstance();
             v.ride();
@@ -38,7 +39,6 @@ public class ClassLoading {
 
     private void rmiLoadRemote(String name) {
         try {
-
             URL codebase = new URL("http://localhost:8080/");
             Class c = RMIClassLoader.loadClass(codebase, name);
             Vehicle v = (Vehicle) c.newInstance();
@@ -70,5 +70,4 @@ public class ClassLoading {
         Name_of_Vehicle = "Motorcycle";
         customClassLoader(Name_of_Vehicle);
     }
-
 }
