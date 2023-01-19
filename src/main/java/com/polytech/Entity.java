@@ -116,19 +116,13 @@ public class Entity {
             // get an instance of a cipher with RSA with ENCRYPT_MODE
             // Init the signature with the Public key
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, this.thePublicKey);
+            cipher.init(Cipher.ENCRYPT_MODE, this.thePrivateKey);
 
 
             // get an instance of the java.security.MessageDigest with SHA1
             // process the digest
             MessageDigest md = MessageDigest.getInstance("SHA1");
             byte[] digest = md.digest(aMessage);
-            byte[] iv = new byte[8];
-            SecureRandom random = new SecureRandom();
-            random.nextBytes(iv);
-            this.ivDES = new IvParameterSpec(iv);
-
-
             // return the encrypted digest
             return cipher.doFinal(digest);
         } catch (Exception e) {
@@ -153,15 +147,16 @@ public class Entity {
             // Init the signature with the private key
             // decrypt the signature
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-            cipher.init(Cipher.ENCRYPT_MODE, this.thePrivateKey);
+            cipher.init(Cipher.DECRYPT_MODE,aPK);
 
             // get an instance of the java.security.MessageDigest with SHA1
             // process the digest
             MessageDigest md = MessageDigest.getInstance("SHA1");
             byte[] digest = md.digest(aMessage);
+            byte[] signDecrypt = cipher.doFinal(aSignature);;
 
             // check if digest1 == digest2
-            return Arrays.equals(digest, aSignature);
+            return Arrays.equals(digest, signDecrypt);
 
         } catch (Exception e) {
             System.out.println("Verify signature error");

@@ -63,6 +63,7 @@ public class Asymetric {
             // display the clear text
             System.out.println("Message == \n" + new String(aMessage));
             // sign it
+            Alice.alicePublicKey = Bob.thePublicKey;
             aSignature = Alice.mySign(aMessage);
             // display and store the signature
             System.out.println("Alice Signature == \n" + new String(aSignature));
@@ -71,7 +72,7 @@ public class Asymetric {
             out.close();
 
             // BOB CHECKS THE ALICE SIGNATURE
-            System.out.println("Bob signature verification == " + Bob.myCheckSignature(aMessage, aSignature, Alice.thePublicKey));
+            System.out.println("Bob MYsignature verification == " + Bob.myCheckSignature(aMessage, aSignature, Alice.thePublicKey));
 
             // RSA ENCRYPTION/DECRYPTION
             System.out.println("\nRSA ENCRYPTION\n");
